@@ -1,6 +1,6 @@
-FROM debian:bookworm-slim
+FROM node:24-bookworm-slim
 
-# 安装必要依赖：curl, ca-certificates, procps, git 等
+# 安装系统运行依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
@@ -9,24 +9,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     && rm -rf /var/lib/apt/lists/*
 
-# 创建工作空间及非 root 运行环境
+# 全局安装 penguin CLI（也可以保留官方一键安装脚本）
+RUN npm install -g @prismshadow/penguin-cli || (curl -fsSL https://penguin.ooo/install.sh | bash)
+
+# 创建普通用户 penguin
 RUN useradd -m -s /bin/bash penguin
 
-# 切换为 penguin 用户并执行官方一键安装
-USER penguin
+# 确保全局与本地 bin 都在 PATH 中
+ENV PATH="/usr/local/bin:/home/penguin/.local/bin:/home/penguin/.penguin/bin:$PATH"
+
+# 创建工作目录和数据目录并赋予权限
+RUN mkdir -p /home/penguin/.penguin/data /home/penguin/workspace && \
+    chown -R penguin:penguin /home/penguin
+
 WORKDIR /home/penguin
+USER penguin
 
-# 安装 penguin harness
-RUN curl -fsSL https://penguin.ooo/install.sh | sh
-
-# 配置 PATH 环境变量
-ENV PATH="/home/penguin/.local/bin:/home/penguin/bin:$PATH"
-
-# 暴露 Penguin Harness 默认 Web UI 端口
 EXPOSE 7364
-
-# 创建数据挂载目录
-RUN mkdir -p /home/penguin/.penguin /home/penguin/workspace
 
 COPY --chown=penguin:penguin docker-entrypoint.sh /home/penguin/docker-entrypoint.sh
 RUN chmod +x /home/penguin/docker-entrypoint.sh
