@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  penguinh:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: penguinh:latest
+    container_name: penguinh-web
+    restart: unless-stopped
+    ports:
+      - "7364:7364"
+    volumes:
+      # 持久化用户配置与数据
+      - ./data:/home/penguin/.penguin
+      # 持久化工作空间/产物
+      - ./workspace:/home/penguin/workspace
+    environment:
+      - NODE_ENV=production
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
