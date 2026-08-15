@@ -4,6 +4,9 @@ set -e
 # 加载可能的所有 bin 路径
 export PATH="/usr/local/bin:/usr/bin:/home/penguin/.local/bin:/home/penguin/.penguin/bin:/home/penguin/bin:$PATH"
 
+# 确保运行时目录存在
+mkdir -p /home/penguin/.penguin /home/penguin/workspace
+
 echo "=================================================="
 echo " Starting Penguin Harness (penguinh) Web Server..."
 echo " Web UI Port: 7364"
